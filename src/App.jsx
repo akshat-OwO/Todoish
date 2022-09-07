@@ -2,10 +2,14 @@ import { useState } from 'react';
 
 // custom components
 import CustomForm from './components/CustomForm';
+import EditForm from './components/EditForm';
 import Tasklist from './components/Tasklist';
 
 function App() {
   const [tasks, setTasks] = useState([]);
+  const [editedTask, setEditedTasks] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [previousFocusEL, setPreviousFocusEL] = useState(null);
   
   const addTask = (task) => {
     setTasks((prevState) => [...prevState, task]);
@@ -21,13 +25,45 @@ function App() {
       )))
   }
 
+  const updateTask = (task) => {
+    setTasks(prevState => prevState.map(t => (
+        t.id === task.id ? {...t, name: task.name} : t
+      )))
+      closeEditMode();
+  }
+
+  const closeEditMode = () => {
+    setIsEditing(false);
+    previousFocusEL.focus()
+  }
+
+  const enterEditMode = (task) => {
+    setEditedTasks(task);
+    setIsEditing(true);
+    setPreviousFocusEL(document.activeElement);
+  }
+
   return (
     <div className="container">
       <header>
         <h1>Todoish</h1>
       </header>
+      { isEditing && (
+        <EditForm 
+          editedTask={editedTask}
+          updateTask={updateTask}
+          closeEditMode= {closeEditMode}
+        />
+      )}
       <CustomForm addTask={addTask}/>
-      { tasks && <Tasklist tasks={tasks} deleteTask={deleteTask} toggleTask={toggleTask} />}
+      { tasks && (
+        <Tasklist
+          tasks={tasks}
+          deleteTask={deleteTask}
+          toggleTask={toggleTask}
+          enterEditMode={enterEditMode}
+        />
+      )}
     </div>
   )
 }
